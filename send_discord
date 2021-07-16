@@ -1,0 +1,91 @@
+#!/bin/bash
+
+argTF(){
+  if [ -z "$1" ]; then
+    echo "FALSE"
+  else
+    echo "TRUE"
+  fi
+}
+
+if [ $# -eq 0 ]; then
+  echo "エラー:引数がありません"
+  echo "send_discord [message]"
+  exit 1
+fi
+
+for OPT in "$@"
+do
+  case "$OPT" in
+    "-s"|"--set")
+      FLG_SET="TRUE"
+      if [ "`argTF $2`" = "FALSE" ] || [ "`argTF $3`" = "FALSE" ];
+      then
+        echo "引数が足りません"
+        exit 1
+      fi
+      KEY="$2"
+      VALUE="$3"
+      shift 3
+      ;;
+    "-n"|"--name")
+      FLG_NAME="TRUE"
+      if [ "`argTF` $2" = "FALSE" ];
+      then
+        echo "引数が足りません"
+        exit 1
+      fi
+      VALUE="$2"
+      shift 2
+      ;;
+    "-i"|"--icon")
+      FLG_ICON="TRUE"
+      if [ "`argTF $2`" = "FALSE" ]; then
+        echo "引数が足りません"
+        exit 1
+      fi
+      VALUE2="$2"
+      shift 2
+      ;;
+  esac
+done
+
+. ~/.send_discordconf
+
+
+if [ "$FLG_SET" = "TRUE" ]; then
+  echo "option set"
+  case $KEY in
+    "name")
+      SHOWNAME=$VALUE
+      echo "表示名を$VALUEに設定しました"
+      ;;
+    "url")
+      URL=$VALUE
+      echo "送り先のURLを設定しました"
+      ;;
+    "icon")
+      ICON=$VALUE
+      echo "アイコンのURLを変更しました"
+      ;;
+    * )
+      echo "$KEYはありません"
+      exit 1
+      ;;
+  esac
+  echo "SHOWNAME=$SHOWNAME">~/.send_discordconf
+  echo "URL=$URL">>~/.send_discordconf
+  echo "ICON=$ICON">>~/.send_discordconf
+  exit 0
+
+else
+  if [ "$FLG_NAME" = "TRUE" ]; then
+    SHOWNAME="$VALUE"
+  fi
+  if [ "$FLG_ICON" = "TRUE" ]; then
+    ICON="$VALUE2"
+  fi
+fi
+
+JSON='{"username":"'$SHOWNAME'","avatar_url":"'$ICON'","content":"'${@:$#:1}'"}'
+curl -X POST -H "Content-Type:application/json" -d $JSON $URL
