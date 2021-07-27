@@ -8,12 +8,6 @@ argTF(){
   fi
 }
 
-if [ $# -eq 0 ]; then
-  echo "エラー:引数がありません"
-  echo "send_discord [message]"
-  exit 1
-fi
-
 for OPT in "$@"
 do
   case "$OPT" in
@@ -60,7 +54,7 @@ if [ "$FLG_SET" = "TRUE" ]; then
       SHOWNAME=$VALUE
       echo "表示名を$VALUEに設定しました"
       ;;
-    "url")
+    "url"|"URL")
       URL=$VALUE
       echo "送り先のURLを設定しました"
       ;;
@@ -87,5 +81,15 @@ else
   fi
 fi
 
-JSON='{"username":"'$SHOWNAME'","avatar_url":"'$ICON'","content":"'${@:$#:1}'"}'
-curl -X POST -H "Content-Type:application/json" -d $JSON $URL
+if [ -p /dev/stdin ]; then
+  CONT=$(sed -z 's/\n/\\n/g' /dev/stdin)
+elif [ $# -ne 0 ]; then
+  CONT=$1
+else
+  echo "エラー:引数がありません"
+  echo "send_discord [message]"
+  exit 1
+fi
+
+JSON='{"username":"'$SHOWNAME'","avatar_url":"'$ICON'","content":"'$CONT'"}'
+curl -X POST -H "Content-Type:application/json" -d "$JSON" $URL
