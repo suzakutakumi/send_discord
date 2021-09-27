@@ -41,6 +41,15 @@ do
       VALUE2="$2"
       shift 2
       ;;
+    "-u"|"--url")
+      FLG_URL="TRUE"
+      if [ "`argTF $2`" = "FALSE" ]; then
+        echo "引数が足りません"
+        exit 1
+      fi
+      VALUE3="$2"
+      shift 2
+      ;;
   esac
 done
 
@@ -78,6 +87,9 @@ else
   fi
   if [ "$FLG_ICON" = "TRUE" ]; then
     ICON="$VALUE2"
+  fi
+  if [ "$FLG_URL" = "TRUE" ]; then
+    URL="$VALUE3"
   fi
 fi
 
