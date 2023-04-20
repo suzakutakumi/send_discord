@@ -53,8 +53,9 @@ do
   esac
 done
 
-. ~/.send_discordconf
-
+if [ -f ~/.send_discordconf ]; then
+  . ~/.send_discordconf
+fi
 
 if [ "$FLG_SET" = "TRUE" ]; then
   echo "option set"
@@ -103,5 +104,15 @@ else
   exit 1
 fi
 
-JSON='{"username":"'$SHOWNAME'","avatar_url":"'$ICON'","content":"'$CONT'"}'
+JSON="{"
+
+if [ "$SHOWNAME" != "" ]; then
+  JSON=$JSON"\"username\":\"$SHOWNAME\","
+fi
+if [ "$ICON" != "" ]; then
+  JSON=$JSON"\"avatar_url\":\"$ICON\","
+fi
+
+
+JSON=$JSON'"content":"'$CONT'"}'
 curl -X POST -H "Content-Type:application/json" -d "$JSON" $URL
